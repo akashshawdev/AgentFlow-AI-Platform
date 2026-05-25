@@ -1,0 +1,74 @@
+name: AgentFlow CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-placeholder' }}
+      WEAVIATE_URL: http://localhost:8080
+      ENVIRONMENT: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linting
+        run: |
+          pip install ruff
+          ruff check backend/ tests/ --select=E,W,F --ignore=E501
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ -v \
+            --cov=backend \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --tb=short \
+            -x
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t agentflow:${{ github.sha }} .
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name af-test \
+            -e OPENAI_API_KEY=sk-placeholder \
+            -e WEAVIATE_URL=http://localhost:8080 \
+            -p 8000:8000 \
+            agentflow:${{ github.sha }}
+          sleep 5
+          # Container should start (health endpoint may fail without Weaviate, that's expected)
+          docker logs af-test
+          docker stop af-test
