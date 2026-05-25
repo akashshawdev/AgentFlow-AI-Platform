@@ -95,7 +95,7 @@ cd frontend && npm install && npm run dev
 | Semantic Retrieval P95 Latency | 310ms | 192ms | **-38%** |
 | Hallucination Rate | 21% | 8.3% | **-60%** |
 | Top-5 Retrieval Precision | 0.61 | 0.79 | **+29%** |
-| Agent Task Throughput | — | 340 tasks/min | — |
+| Agent Task Throughput | - | 340 tasks/min | - |
 
 ---
 
@@ -120,7 +120,7 @@ agentflow/
 
 ## Interview Talking Points
 
-1. **Why Weaviate over Pinecone?** — Weaviate supports hybrid BM25+vector search natively; for technical documentation, keyword matching on API names/error codes improves precision significantly.
-2. **How does the 38% latency improvement work?** — HNSW ef parameter tuning + query-time filtering by document type reduces the candidate set before scoring. We also cache top-K embeddings for repeated query patterns.
-3. **How do you detect hallucinations at scale?** — SelfCheckGPT samples 5 stochastic responses per query and measures inter-response consistency. High variance = likely hallucination. RAGAS faithfulness score validates claims against retrieved context.
-4. **What's the hardest multi-agent coordination problem?** — Validator agent sometimes contradicts the Summarizer's output. Solved with a structured JSON contract between agents and a retry-with-feedback loop capped at 3 iterations.
+1. **Why Weaviate over Pinecone?** - Weaviate supports hybrid BM25+vector search natively; for technical documentation, keyword matching on API names/error codes improves precision significantly.
+2. **How does the 38% latency improvement work?** - HNSW ef parameter tuning + query-time filtering by document type reduces the candidate set before scoring. We also cache top-K embeddings for repeated query patterns.
+3. **How do you detect hallucinations at scale?** - SelfCheckGPT samples 5 stochastic responses per query and measures inter-response consistency. High variance = likely hallucination. RAGAS faithfulness score validates claims against retrieved context.
+4. **What's the hardest multi-agent coordination problem?** - Validator agent sometimes contradicts the Summarizer's output. Solved with a structured JSON contract between agents and a retry-with-feedback loop capped at 3 iterations.
